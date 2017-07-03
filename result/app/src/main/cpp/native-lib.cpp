@@ -68,7 +68,7 @@ void wait_for_root_adb(pid_t old_adb)
 }
 
 extern "C"
-JNIEXPORT int JNICALL
+JNIEXPORT jstring JNICALL
 Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) {
 
     pid_t adb_pid = 0, p;
@@ -152,8 +152,13 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
     }
 
     wait_for_root_adb(adb_pid);//exploit调用wait_for_root_adb()，等待系统重启一个adb，这个新建的adb就会具有root权限
-    int result = 123;
-    return result;
+    int result;
+    result = setsid();
+    std::string ss = "root successfully!";
+    char tmp[256];
+    sprintf(tmp,"%d",result);
+    ss = tmp;
+    return env->NewStringUTF(ss.c_str());
 
 }
 
@@ -171,6 +176,6 @@ Java_com_example_zgd_result_MainActivity_test(JNIEnv *env, jobject instance) {
 
     int r = 123;
     std::string ss;
-    ss = (std::string) (r);
+//    ss = (std::string) (r);
     return env->NewStringUTF(ss.c_str());
 }
