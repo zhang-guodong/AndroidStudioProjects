@@ -122,7 +122,7 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
     //成功
 
     if (fork() > 0){//fork了一个新的进程，父进程退出，而子进程继续
-//        exit(0);
+        exit(0);
     }
     /* 在测试点1-5测试返回hello from c++
      * 测试结果：
