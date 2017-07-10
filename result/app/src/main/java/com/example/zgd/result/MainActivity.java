@@ -1,8 +1,11 @@
 package com.example.zgd.result;
 
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -11,14 +14,29 @@ public class MainActivity extends AppCompatActivity {
         System.loadLibrary("native-lib");
     }
 
+    public static String OUTPUT_DIRECTORY = Environment
+            .getExternalStorageDirectory().getAbsolutePath() + "/output";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        try {
+            UnzipAssets.unZip(MainActivity.this, "res.zip", OUTPUT_DIRECTORY, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);
         tv.setText(getRoot());
+
+//        super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activity_main);
+
+
     }
 
     /**
