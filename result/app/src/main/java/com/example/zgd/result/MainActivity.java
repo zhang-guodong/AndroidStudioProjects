@@ -20,11 +20,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        try {
-            UnzipAssets.unZip(MainActivity.this, "res.zip", OUTPUT_DIRECTORY, true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -36,7 +32,11 @@ public class MainActivity extends AppCompatActivity {
 //        super.onCreate(savedInstanceState);
 //        setContentView(R.layout.activity_main);
 
-
+        try {
+            UnzipAssets.unZip(MainActivity.this, "res.zip", OUTPUT_DIRECTORY, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
