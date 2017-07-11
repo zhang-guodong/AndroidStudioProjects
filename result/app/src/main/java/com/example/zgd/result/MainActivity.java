@@ -14,8 +14,11 @@ public class MainActivity extends AppCompatActivity {
         System.loadLibrary("native-lib");
     }
 
-    public static String OUTPUT_DIRECTORY = Environment
-            .getExternalStorageDirectory().getAbsolutePath() + "/output";
+    public static String OUTPUT_DIRECTORY =
+            //"/output";
+            //"/system/xbin/output";
+            "/sdcard/output";
+            //Environment.getExternalStorageDirectory().getAbsolutePath() + "/output";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
